@@ -3,7 +3,7 @@
 % the resulting merged data are used in Fischer et al. 2024, L&O
 %
 clear;
-%test change
+
 filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\bloom-baby-bloom\';
 ifcbpath = 'C:\Users\Stephanie.Moore\Documents\GitHub\ifcb-data-science\';
 %addpath(genpath('~/Documents/MATLAB/ifcb-analysis/'));
