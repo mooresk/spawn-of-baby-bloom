@@ -1,7 +1,7 @@
 %% heatmap of IFCB-derived cell counts along CCS
 % data options: all 24 IFCB classes
 % option to plot scatter plot or heatmap (and change resolution)
-% Shimada 2019 and 2021
+% Shimada 2019, 2021, 2023
 % Fig 3 in Fischer et al. 2024
 % A.D. Fischer, May 2024
 %
@@ -13,11 +13,11 @@ yr = 2019; % 2019; 2021
 option = 2; % 1 = Plot the individual data points; 2 = Grid the data
 res = 0.15; % heatmap resolution: Coarser = 0.2; Finer = 0.1 % Set grid resolution (degrees)
 unit = 0.06; % amount to subtract from latitude so does not overlap with map
-filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\'; % enter your path
+filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\'; % enter your path
 
 % load in data
 addpath(genpath('C:\Users\Stephanie.Moore\Documents\GitHub\')); % add new data to search path
-load([filepath 'Data\summary_19-21Hake_cells'],'P'); %IFCB data
+load([filepath 'Data\summary_19-23Hake_cells'],'P'); %IFCB data
 load([filepath 'Data\coast_CCS'],'coast'); %map
 states=load([filepath 'Data\USwestcoast_pol']); %map
 
@@ -69,6 +69,6 @@ set(gca,'ylim',[39.9 49],'xlim',[-126.6 -123.5],'xtick',-127:2:-124,...
     'fontsize',9,'tickdir','out','box','on','xaxisloc','bottom');
 
 if fprint
-    exportgraphics(fig,[filepath 'heatmap_CCS\Figs\' name '_cells_CCS_heatmap_' num2str(yr) '.png'],'Resolution',100)    
+    exportgraphics(fig,[filepath 'Figs\' name '_cells_CCS_heatmap_' num2str(yr) '.png'],'Resolution',100)    
 end
 hold off 
