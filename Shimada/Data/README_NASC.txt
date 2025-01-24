@@ -1,0 +1,5 @@
+It took me a little while to get the 2019, 2021, and 2023 data to you because I realized the current datasets I work with don't include the timestamp. But I was able to go back and grab the along-transect data with time stamps, as well as lat/long, so it's hopefully pretty easy to match up to your IFCB data.
+
+For reference, in the attached file you'll see column headers for metadata like year, survey, transect, DepthBin ("WC" = water column, which in this case is 50-300m), etc. as well as acoustic-specific headers like Interval (along-transect) and NASC - the actual relative abundance estimate of krill. All of the header names ending in "_S", "_M", or "_E" refer to the Lat, Lon, Date, Time, Ping #, and Dist (along-transect) at the "Start", "Middle" and "End" of the 0.5 nmi along-transect bin that the data were exported in. There's also a column with a formatted date, which is helpful for my R scripting. 
+
+-Beth Phillips
