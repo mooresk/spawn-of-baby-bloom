@@ -1,24 +1,26 @@
-%% Find and remove smaller particles that are not consistently imaged across years before applying classifier
-%   
+%% Modified workflow from extractblobfeat_applyclassifier.m to remove smaller particles that are not consistently imaged across years before applying classifier
+%   Uses features that have already been extracted, applies the classifier, and creates summary files 
+%   This workflow uses code in hsosik\ifcb-analysis\ and alexisfischer\ifcb-data-science\
+%
 %   Stephanie K. Moore, February 2025
 
 clear;
 
 %%%% USER specify year for data processing (functions only do one year at a time)
-yr = '2019'; %'2019' %'2021' %'2023'
+yr='2019'; %'2019' %'2021' %'2023'
 
 %%%% USER specify IFCB data paths
-filepath = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\';
-ifcbdir = 'D:\Shimada\'; 
+filepath='C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\';
+ifcbdir='D:\Shimada\'; 
 
 %%%% USER specify where you want your summary file to go
-summarydir = 'C:\Users\ifcbuser\Documents\GitHub\ifcb-data-science\IFCB-Data\Shimada\';
+summarydir='C:\Users\ifcbuser\Documents\GitHub\ifcb-data-science\IFCB-Data\Shimada\';
 
 %%%% USER specify your classifier
-classifier = 'D:\general\classifier\summary\Trees_CCS_NOAA-OSU_v7'; %our Northern CA Current System random forest classifier
+classifier='D:\general\classifier\summary\Trees_CCS_NOAA-OSU_v7'; %our Northern CA Current System random forest classifier
 
 %%%% USER specify size cutoff (ESD in microns)
-ct = 10;
+ct=10;
 
 %% Process data (uses hsosik\ifcb-analysis\)
 addpath(genpath(ifcbdir)); %add to your MATLAB paths
@@ -30,8 +32,6 @@ load([filepath 'Shimada\Data\eqdiam_biovol_' yr],'ESD','matdate');
 dt = datetime(matdate,'convertfrom','datenum');
 
 %%%% find ROIs that are smaller than size cutoff
-ct_ROIs = {};
-for i = 1:length(ESD)
-    idx = find(ESD{i,1}<ct);
-    ct_ROIs{i,1} = idx;
-end
+for i=1:length(ESD)
+    idx=ESD{i,1}<10;
+    ct_ROIs={i,i}
