@@ -51,27 +51,73 @@ for i = 1:length(dts)
     end
 end
 
-PESD=timetable(dt,ESD);
 
+%% get ml analyzed
+
+ifcbpath = 'C:\Users\Stephanie.Moore\Documents\GitHub\ifcb-data-science\';
+addpath(genpath(ifcbpath));
+
+load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB.mat'],'mdateTB','ml_analyzedTB');
+
+dtts = datetime(mdateTB,'convertfrom','datenum'); dtts.Format = 'yyyy-MM-dd HH:mm:ss';        
+dtts = dateshift(dtts,'start','minute'); %round IFCB data to nearest minute to match with summary file
+
+dtt = [];
+mlAnalyzed = [];
+for i = 1:length(dtts)
+    idx = find(dtts(i)==PB.DT);
+    if idx
+        dtt = [dtt; dtts(idx)];
+        mlAnalyzed = [mlAnalyzed; ml_analyzedTB(idx)];
+    end
+end
+
+%% create timetable
+
+PESD = timetable(dt,ESD,mlAnalyzed);
 
 %% plot particles
-
 
 tr19 = timerange(datetime(2019,1,1),datetime(2019,12,31));
 tr21 = timerange(datetime(2021,1,1),datetime(2021,12,31));
 tr23 = timerange(datetime(2023,1,1),datetime(2023,12,31));
-PESD19=PESD(tr19,:);
-PESD21=PESD(tr21,:);
-PESD23=PESD(tr23,:);
+PESD19 = PESD(tr19,:);
+PESD21 = PESD(tr21,:);
+PESD23 = PESD(tr23,:);
+vol19 = sum(PESD19.mlAnalyzed);
+vol21 = sum(PESD21.mlAnalyzed);
+vol23 = sum(PESD23.mlAnalyzed);
+
+
+h19 = histogram(cell2mat(PESD19.ESD),0:1:70);
+hh19 = h19.Values/vol19;
+h21 = histogram(cell2mat(PESD21.ESD),0:1:70);
+hh21 = h21.Values/vol21;
+h23 = histogram(cell2mat(PESD23.ESD),0:1:70);
+hh23 = h23.Values/vol23;
+bins = h23.BinEdges;
+
+close all
 
 fig=figure('Units','inches','Position',[1 1 3.5 2],'PaperPositionMode','auto');
-    histogram(cell2mat(PESD19.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','g'); hold on
-    histogram(cell2mat(PESD21.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','y'); hold on
-    histogram(cell2mat(PESD23.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','r'); hold on
+    histogram('BinEdges',bins,'BinCounts',hh19,'DisplayStyle','stairs','edgecolor','g'); hold on
+    histogram('BinEdges',bins,'BinCounts',hh21,'DisplayStyle','stairs','edgecolor','y'); hold on
+    histogram('BinEdges',bins,'BinCounts',hh23,'DisplayStyle','stairs','edgecolor','r'); hold on
     set(gca,'xlim',[0 50],'fontsize',10,'tickdir','out');
-    ylabel('particle count','fontsize',11)
+    ylabel('particles per mL','fontsize',11)
     xlabel('ESD (\mum)')    
     legend('g=2019','y=2021','r=2023'); legend boxoff;
+
+
+%%%% plots particles but does not standardize for volume analyzed
+% fig=figure('Units','inches','Position',[1 1 3.5 2],'PaperPositionMode','auto');
+%     histogram(cell2mat(PESD19.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','g'); hold on
+%     histogram(cell2mat(PESD21.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','y'); hold on
+%     histogram(cell2mat(PESD23.ESD),0:1:70,'DisplayStyle','stairs','edgecolor','r'); hold on
+%     set(gca,'xlim',[0 50],'fontsize',10,'tickdir','out');
+%     ylabel('particle count','fontsize',11)
+%     xlabel('ESD (\mum)')    
+%     legend('g=2019','y=2021','r=2023'); legend boxoff;
 
 %CHANGE FOR SPAWN OF BABY BLOOM
 % if fprint
