@@ -219,7 +219,9 @@ fx_unclassified_PB=mean(PB.unclassified./(PB.unclassified + PB.Akashiwo + PB.Ale
 % save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB');
 
 %%%% save merged data using summary IFCB file that excludes small ROIs with ESD<10 um
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizethresh.mat','P');
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizethresh.mat','PB');
+P_sizethresh=P;
+PB_sizethresh=PB;
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells.mat','P_sizethresh');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB_sizethresh');
 
 clearvars E T idx X
