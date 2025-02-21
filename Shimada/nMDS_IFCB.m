@@ -1,7 +1,7 @@
 %% Conduct nMDS on IFCB data
 
 close all; 
-clear all;
+clear;
 
 %%%%USER
 filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';
@@ -9,7 +9,8 @@ yr=[2019 2021 2023];
 
 % load in data
 addpath(genpath(filepath)); % add new data to search path
-load([filepath 'Shimada\Data\summary_19-23Hake_biovolume.mat'],'PB'); %IFCB data
+% load([filepath 'Shimada\Data\summary_19-23Hake_biovolume.mat'],'PB'); %load all IFCB data
+load([filepath 'Shimada\Data\summary_19-23Hake_biovolume_sizethresh.mat'],'PB'); %load IFCB data that excludes small ROIs with ESD<10 um
 
 % remove IFCB data that does not have matching NASC value
 PB(isnan(PB.avNASC),:)=[];
@@ -19,6 +20,15 @@ PB(isnan(PB.avNASC),:)=[];
 X=[PB.Akashiwo PB.Alexandrium_catenella PB.Asterionellopsis PB.Cera_Dact_Deto_Guin PB.Chaetoceros PB.Cylindrotheca ...
     PB.Dictyocha PB.Dinophysis PB.Eucampia PB.Gymnodinium PB.Hete_Scri PB.Katodinium PB.Lauderia PB.Leptocylindrus PB.Navicula PB.Nitzschia ...
     PB.Prob_Rhiz PB.Pseudonitzschia PB.Skeletonema PB.Thalassiosira PB.unclassified];
+
+% remove rows of X that have nothing in classified or unclassified (for IFCB data that excludes small ROIs)
+Xsum = NaN(length(X),1);
+for i=1:length(X)
+    Xsum(i)=sum(X(i,:));
+end
+f = find(Xsum==0);
+X(f,:)=[]; 
+PB(f,:)=[]; clearvars f Xsum;
 
 % transform data
 X=nthroot(X,4);

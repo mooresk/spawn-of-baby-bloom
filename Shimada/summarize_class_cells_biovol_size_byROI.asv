@@ -118,10 +118,10 @@ for i = 1:length(filelistTB)
     classcount_above_optthresh_sizethreshTB(i,:) = classcount_above_optthresh;
     classbiovol_above_optthresh_sizethreshTB(i,:) = classbiovol_above_optthresh;
 
-    classcount_lessthansizethreshTB(i,:) = classcount_lessthansizethresh;
-    classbiovol_lessthansizethreshTB(i,:) = classbiovol_lessthansizethresh;
-    classcount_above_optthresh_lessthansizethreshTB(i,:) = classcount_above_optthresh_lessthansizethresh;
-    classbiovol_above_optthresh_lessthansizethreshTB(i,:) = classbiovol_above_optthresh_lessthansizethresh;
+    classcount_lessthansizethreshTB = classcount_sizethreshTB;
+    classbiovol_lessthansizethreshTB = classcount_sizethreshTB;
+    classcount_above_optthresh_lessthansizethreshTB = classcount_sizethreshTB;
+    classbiovol_above_optthresh_lessthansizethreshTB = classcount_sizethreshTB;
 
     hdr=IFCBxxx_readhdr2(hdrname{i});
     runtypeTB{i}=hdr.runtype;
