@@ -86,7 +86,7 @@ for i = 1:length(filelistTB)
     %find ROIs<ESDthreshold
     idx = eqdiam<ESDthreshold; 
     
-    %% sum up classes
+    % sum up classes
     classcount = NaN(length(class2useTB),1);
     classcount_above_optthresh = classcount;
     classbiovol = classcount;
