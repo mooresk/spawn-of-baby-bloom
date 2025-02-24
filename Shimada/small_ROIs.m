@@ -8,5 +8,12 @@ filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';
 addpath(genpath(filepath)); % add new data to search path
 
 % load in data
-load([filepath 'Shimada\Data\summary_19-23Hake_biovolume.mat'],'PB'); %load all IFCB data
 load([filepath 'Shimada\Data\summary_19-23Hake_biovolume_sizethresh.mat'],'PB'); %load IFCB data that excludes small ROIs with ESD<10 um
+load([filepath 'Shimada\Data\summary_19-23Hake_cells_sizethresh.mat'],'P'); %load IFCB data that excludes small ROIs with ESD<10 um
+PB_sizethresh=PB;
+P_sizethresh=P;
+
+load([filepath 'Shimada\Data\summary_19-23Hake_biovolume.mat'],'PB'); %load all IFCB data
+load([filepath 'Shimada\Data\summary_19-23Hake_cells.mat'],'P'); %load all IFCB data
+
+
