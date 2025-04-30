@@ -1,0 +1,107 @@
+function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
+%function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
+% Inputs class and features files and outputs a summary file of counts and 
+% equivalent spherical diameter for each roi for 2 classifier outputs 
+% (winner takes all, opt score threshold)
+%
+% A.D. Fischer, March 2025
+%
+% %Example inputs
+% summarydir = 'C:\Users\ifcbuser\Documents\GitHub\bloom-baby-bloom\IFCB-Data\Shimada\class\'; %where you want the summary file to go
+% feapath_generic = 'F:\Shimada\features\xxxx\'; %Put in your featurepath byyear
+% roibasepath_generic = 'F:\Shimada\data\xxxx\'; %location of raw data
+% classpath_generic = 'F:\Shimada\class\classxxxx_v1\'; %location of classified data
+% yrrange = 2019:2023;  %years that you want summarized
+% micron_factor = 1/3.8; %pixel to micron conversion, input for IFCB of interest
+
+classfiles = [];
+filelistTB = [];
+feafiles = [];
+hdrname = [];
+
+%get the names and paths of the files to summarize
+for i = 1:length(yrrange)
+    yr = yrrange(i);  
+    classpath = regexprep(classpath_generic, 'xxxx', num2str(yr));
+    feapath = regexprep(feapath_generic, 'xxxx', num2str(yr));
+    roibasepath = regexprep(roibasepath_generic, 'xxxx', num2str(yr));
+
+    temp = dir([classpath 'D*.mat']);
+    if ~isempty(temp) 
+        names = char(temp.name);
+        filelistTB = [filelistTB; cellstr(names(:,1:24))];    
+        
+        pathall = repmat(roibasepath, length(temp),1);
+        xall = repmat('.hdr', size(names,1),1);      
+        fall = repmat('\', size(names,1),1);            
+        hdrname = [hdrname; cellstr([pathall names(:,1:9) fall names(:,1:24) xall])];
+
+        pathall = repmat(classpath, length(temp),1);
+        classfiles = [classfiles; cellstr([pathall names])];
+        
+        pathall = repmat(feapath, length(temp),1);
+        xall = repmat('_fea_v2.csv', length(temp),1);
+        feafiles = [feafiles; cellstr([pathall names(:,1:24) xall])];   
+    end
+   clearvars temp names pathall classpath feapath roibasepath xall fall yr    
+end
+
+% preallocate
+mdateTB = IFCB_file2date(filelistTB);
+ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
+load(classfiles{1},'class2useTB');
+runtypeTB=filelistTB; %contents will be overwritten
+filecommentTB=filelistTB; %contents will be overwritten
+% note: i'm not preallocating BiEQ here b/c this is tricky for structures. 
+% that said, it's not really necessary in this particular situation, but
+% it would speed up the runtime if you did preallocate. you can play with it!
+
+%%%% extract info per ROI
+for i = 1:length(classfiles)
+    
+    %extract roi# and ESD from feature files
+    feastruct = importdata(feafiles{i}); %load in feature file    
+    ind = strcmp('roi_number',feastruct.colheaders); %colheaders might be textdata
+    roi = feastruct.data(:,ind);    
+    ind = strcmp('EquivDiameter',feastruct.colheaders); %colheaders might be textdata
+    eqdiam = feastruct.data(:,ind)*micron_factor;
+    
+    %use feature roi# to extract classified data for each roi
+    load(classfiles{i},'roinum','TBclass','TBclass_above_threshold'); %load in class file    
+    class_opt=TBclass_above_threshold(roi); %opt score threshold
+    class_wta=TBclass(roi); %winner takes all
+    
+    % test if there's a difference in the length of rois in the feature files (flen) and class files (clen)  
+    % display message if there's a problem    
+    clen=roinum(end); flen=targets.roi_number(end);
+    if clen==flen
+    else
+        disp([feafiles{i} ': unequal rois in class (' num2str(clen) ') and feature files (' num2str(flen) ')']) 
+    end
+
+    %extract filecomment and runtype data from hdr file
+    hdr=IFCBxxx_readhdr2(hdrname{i});
+    runtypeTB{i}=hdr.runtype; % the {i} here might not be necessary, need to check
+    filecommentTB{i}=hdr.filecomment; % the {i} here might not be necessary, need to check   
+
+    %summarize in a structure
+    BiEq(i).filename=filelistTB(1); % you will need to check the syntax of filelist to filename conversion
+    BiEq(i).mdate=mdateTB(i);
+    BiEq(i).ml_analyzed=ml_analyzedTB(i); 
+    BiEq(i).filecomment=filecommentTB{i};
+    BiEq(i).runtype=runtypeTB{i};    
+    BiEq(i).roi=roi;
+    BiEq(i).eqdiam=eqdiam;    
+    BiEq(i).class_opt=class_opt;
+    BiEq(i).class_wta=class_wta;    
+
+    clearvars roi eqdiam class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct ind
+
+end
+
+save([summarydir 'class_eqdiam_biovol_class_byROI_' yr], 'BiEq', 'class2useTB', 'micron_factor')
+
+disp('Summary file stored here:')
+disp([summarydir 'class_eqdiam_biovol_class_byROI_' yr])
+
+end

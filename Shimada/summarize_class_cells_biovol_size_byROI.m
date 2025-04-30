@@ -7,7 +7,7 @@ function [ ] = summarize_class_cells_biovol_size_byROI(summarydir,feapath_generi
 %
 % %Example inputs
 % summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
-% feapath_generic = 'D:\Shimada\features\xxxx\'; %Put in your featurepath byyear
+% feapath_generic = 'D:\Shimada\features\xxxx\'; %Put in your featurepath by year
 % roibasepath_generic = 'D:\Shimada\data\xxxx\'; %location of raw data
 % classpath_generic = 'D:\Shimada\class\classxxxx_v1\'; %location of classified data
 % yrrange = [2019 2021 2023];  %years that you want summarized
@@ -82,10 +82,15 @@ for i = 1:length(filelistTB)
     biovol = feastruct.data(:,ind)*micron_factor.^3; clearvars ind;
     ind = strmatch('EquivDiameter', feastruct.colheaders);
     eqdiam = feastruct.data(:,ind)*micron_factor; clearvars ind;
-    
+    ind = strmatch('roi_number', feastruct.colheaders);
+    roi = feastruct.data(:,ind);
+
     %find ROIs<ESDthreshold
     idx = eqdiam<ESDthreshold; 
-    
+    %%%use fine instead and roi(f) would be the index used in count
+    %roinum = roi(idx)
+    %roi # = (roi (eqdiam<ESDthreshold))
+
     % sum up classes
     classcount = NaN(length(class2useTB),1);
     classcount_above_optthresh = classcount;

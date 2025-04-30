@@ -29,10 +29,16 @@ T=timetable(DT,LAT,LON,TEMP,SAL,FL);
 %    'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
 
 %%%% load modified summary file that excludes small ROIs with an ESD<10 um  
+% load([filepath 'Shimada\Data\class_cells_biovol_eqdiam_sizethresh.mat'],...
+%     'class2useTB','classcount_above_optthresh_sizethreshTB','classbiovol_above_optthresh_sizethreshTB','filelistTB','mdateTB','ml_analyzedTB');
+% classcount_above_optthreshTB=classcount_above_optthresh_sizethreshTB;
+% classbiovol_above_optthreshTB=classbiovol_above_optthresh_sizethreshTB;
+
+%%%% load modified summary file that ONLY INCLUDES small ROIs with an ESD<10 um  
 load([filepath 'Shimada\Data\class_cells_biovol_eqdiam_sizethresh.mat'],...
-    'class2useTB','classcount_above_optthresh_sizethreshTB','classbiovol_above_optthresh_sizethreshTB','filelistTB','mdateTB','ml_analyzedTB');
-classcount_above_optthreshTB=classcount_above_optthresh_sizethreshTB;
-classbiovol_above_optthreshTB=classbiovol_above_optthresh_sizethreshTB;
+    'class2useTB','classcount_above_optthresh_lessthansizethreshTB','classbiovol_above_optthresh_lessthansizethreshTB','filelistTB','mdateTB','ml_analyzedTB');
+classcount_above_optthreshTB=classcount_above_optthresh_lessthansizethreshTB;
+classbiovol_above_optthreshTB=classbiovol_above_optthresh_lessthansizethreshTB;
 
 %% Format 2019-2023 IFCB data
 
@@ -219,9 +225,7 @@ fx_unclassified_PB=mean(PB.unclassified./(PB.unclassified + PB.Akashiwo + PB.Ale
 % save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB');
 
 %%%% save merged data using summary IFCB file that excludes small ROIs with ESD<10 um
-P_sizethresh=P;
-PB_sizethresh=PB;
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells.mat','P_sizethresh');
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB_sizethresh');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizethresh.mat','P');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizethresh.mat','PB');
 
 clearvars E T idx X
