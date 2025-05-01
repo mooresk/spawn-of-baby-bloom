@@ -7,12 +7,12 @@ function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roiba
 % A.D. Fischer, March 2025
 %
 % %Example inputs
-% summarydir = 'C:\Users\ifcbuser\Documents\GitHub\bloom-baby-bloom\IFCB-Data\Shimada\class\'; %where you want the summary file to go
-% feapath_generic = 'F:\Shimada\features\xxxx\'; %Put in your featurepath byyear
-% roibasepath_generic = 'F:\Shimada\data\xxxx\'; %location of raw data
-% classpath_generic = 'F:\Shimada\class\classxxxx_v1\'; %location of classified data
-% yrrange = 2019:2023;  %years that you want summarized
-% micron_factor = 1/3.8; %pixel to micron conversion, input for IFCB of interest
+summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
+feapath_generic = 'D:\Shimada\features\xxxx\'; %Put in your featurepath by year
+roibasepath_generic = 'D:\Shimada\data\xxxx\'; %location of raw data
+classpath_generic = 'D:\Shimada\class\classxxxx_v1\'; %location of classified data
+yrrange = [2019 2021 2023];  %years that you want summarized
+micron_factor = 1/3.8; %pixel to micron conversion
 
 classfiles = [];
 filelistTB = [];
@@ -47,8 +47,10 @@ for i = 1:length(yrrange)
 end
 
 % preallocate
-mdateTB = IFCB_file2date(filelistTB);
-ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
+load([summarydir 'debug'], 'mdateTB', 'ml_analyzedTB'); %saved variables below to save time while debugging
+% mdateTB = IFCB_file2date(filelistTB);
+% ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
+
 load(classfiles{1},'class2useTB');
 runtypeTB=filelistTB; %contents will be overwritten
 filecommentTB=filelistTB; %contents will be overwritten
@@ -68,12 +70,20 @@ for i = 1:length(classfiles)
     
     %use feature roi# to extract classified data for each roi
     load(classfiles{i},'roinum','TBclass','TBclass_above_threshold'); %load in class file    
-    class_opt=TBclass_above_threshold(roi); %opt score threshold
-    class_wta=TBclass(roi); %winner takes all
-    
+    %class_opt=TBclass_above_threshold(roi); %opt score threshold
+    %class_wta=TBclass(roi); %winner takes all
+    ind=NaN*length(roi);
+    for j = 1:length(roi)
+        f = find(roi(j) == roinum);
+        ind(j) = f;
+        clear f
+    end
+    class_opt=TBclass_above_threshold(ind); %opt score threshold
+    class_wta=TBclass(ind); %winner takes all
+
     % test if there's a difference in the length of rois in the feature files (flen) and class files (clen)  
     % display message if there's a problem    
-    clen=roinum(end); flen=targets.roi_number(end);
+    clen=roinum(end); flen=roi(end);
     if clen==flen
     else
         disp([feafiles{i} ': unequal rois in class (' num2str(clen) ') and feature files (' num2str(flen) ')']) 
@@ -99,9 +109,9 @@ for i = 1:length(classfiles)
 
 end
 
-save([summarydir 'class_eqdiam_biovol_class_byROI_' yr], 'BiEq', 'class2useTB', 'micron_factor')
+save([summarydir 'class_eqdiam_biovol_class_byROI'], 'BiEq', 'class2useTB', 'micron_factor')
 
 disp('Summary file stored here:')
-disp([summarydir 'class_eqdiam_biovol_class_byROI_' yr])
+disp([summarydir 'class_eqdiam_biovol_class_byROI'])
 
 end
