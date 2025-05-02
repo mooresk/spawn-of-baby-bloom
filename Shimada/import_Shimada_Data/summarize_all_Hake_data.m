@@ -73,7 +73,7 @@ class2useTB(strcmp('Heterocapsa_triquetra,Scrippsiella',class2useTB))={'Hete_Scr
 class2useTB(strcmp('Thalassiosira_chain',class2useTB))={'Thalassiosira'};
 class2useTB(strcmp('Proboscia,Rhizosolenia',class2useTB))={'Prob_Rhiz'};
 
-%%%% remove unclassified and PN from regular summary
+%%%% remove unclassified or PN from regular summary
 idx=contains(class2useTB,'Pseudo-nitzschia'); cellsmL(:,idx)=[]; bvmL(:,idx)=[]; class2useTB(idx)=[];
 %idx=contains(class2useTB,'unclassified'); cellsmL(:,idx)=[]; bvmL(:,idx)=[]; class2useTB(idx)=[];
 

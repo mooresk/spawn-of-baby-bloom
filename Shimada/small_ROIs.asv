@@ -18,7 +18,7 @@ BiEq_threshold = BiEq;
 
 %pre-allocate
 classcount_above_optthreshTB = NaN(length(BiEq_threshold),length(class2useTB));
-filelistTB = cell(length(BiEq_threshold),1);
+filelistTB = NaN(length(BiEq_threshold),1);
 mdateTB = NaN(length(BiEq_threshold),1);
 ml_analyzedTB = NaN(length(BiEq_threshold),1);
 
@@ -29,11 +29,13 @@ for i = 1:length(BiEq_threshold)
         ind = strmatch(class2useTB(j), BiEq_threshold(i).class_opt);
         classcount_above_optthreshTB(i,j) = size(ind,1);
     end
-    filelistTB(i) = BiEq_threshold(i).filename;
-    mdateTB = BiEq_threshold(i).mdate;
-    ml_analyzedTB = BiEq_threshold(i).ml_analyzed;
+    
 end
 clear i j
+
+filelistTB = BiEq_threshold.filename(:);
+mdateTB = BiEq_threshold.mdate;
+ml_analyzedTB = BiEq_threshold.ml_analyzed;
 
 %% save new summary file
 save([filepath 'summary_19-23Hake_cells_sizethresh'] ,'*TB')
