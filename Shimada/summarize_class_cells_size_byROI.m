@@ -7,12 +7,12 @@ function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roiba
 % A.D. Fischer, March 2025
 %
 % %Example inputs
-summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
-feapath_generic = 'D:\Shimada\features\xxxx\'; %Put in your featurepath by year
-roibasepath_generic = 'D:\Shimada\data\xxxx\'; %location of raw data
-classpath_generic = 'D:\Shimada\class\classxxxx_v1\'; %location of classified data
-yrrange = [2019 2021 2023];  %years that you want summarized
-micron_factor = 1/3.8; %pixel to micron conversion
+% summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
+% feapath_generic = 'D:\Shimada\features\xxxx\'; %Put in your featurepath by year
+% roibasepath_generic = 'D:\Shimada\data\xxxx\'; %location of raw data
+% classpath_generic = 'D:\Shimada\class\classxxxx_v1\'; %location of classified data
+% yrrange = [2019 2021 2023];  %years that you want summarized
+% micron_factor = 1/3.8; %pixel to micron conversion
 
 classfiles = [];
 filelistTB = [];
