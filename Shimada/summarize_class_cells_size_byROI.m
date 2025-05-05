@@ -58,16 +58,19 @@ filecommentTB=filelistTB; %contents will be overwritten
 %%%% extract info per ROI
 for i = 1:length(classfiles)
     
-    %extract roi# and ESD from feature files
+    %extract roi#, ESD & biovolume from feature files
     feastruct = importdata(feafiles{i}); %load in feature file    
     ind = strcmp('roi_number',feastruct.colheaders); %colheaders might be textdata
-    roi = feastruct.data(:,ind);    
+    roi = feastruct.data(:,ind); clear ind;    
     ind = strcmp('EquivDiameter',feastruct.colheaders); %colheaders might be textdata
-    eqdiam = feastruct.data(:,ind)*micron_factor;
-    
+    eqdiam = feastruct.data(:,ind)*micron_factor; clear ind;
+    ind = strcmp('Biovolume', feastruct.textdata);
+    biovol = feastruct.data(:,ind)*micron_factor.^3; clear ind;
+
     %use feature roi# to extract classified data for each roi
     load(classfiles{i},'roinum','TBclass','TBclass_above_threshold'); %load in class file    
-    %class_opt=TBclass_above_threshold(roi); %opt score threshold
+    %the two lines below incorrectly indexed the roi numbers for small particles - replaced with loop
+    %class_opt=TBclass_above_threshold(roi); %opt score threshold 
     %class_wta=TBclass(roi); %winner takes all
     ind=NaN*length(roi);
     for j = 1:length(roi)
@@ -77,6 +80,7 @@ for i = 1:length(classfiles)
     end
     class_opt=TBclass_above_threshold(ind); %opt score threshold
     class_wta=TBclass(ind); %winner takes all
+    clear ind
 
     % test if there's a difference in the length of rois in the feature files (flen) and class files (clen)  
     % display message if there's a problem    
@@ -98,11 +102,12 @@ for i = 1:length(classfiles)
     BiEq(i).filecomment=filecommentTB{i};
     BiEq(i).runtype=runtypeTB{i};    
     BiEq(i).roi=roi;
-    BiEq(i).eqdiam=eqdiam;    
+    BiEq(i).eqdiam=eqdiam;  
+    BiEq(i).biovol=biovol;  
     BiEq(i).class_opt=class_opt;
     BiEq(i).class_wta=class_wta;    
 
-    clearvars roi eqdiam class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct ind
+    clearvars roi eqdiam biovol class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct
 
 end
 
@@ -112,3 +117,8 @@ disp('Summary file stored here:')
 disp([summarydir 'class_eqdiam_biovol_class_byROI'])
 
 end
+
+
+
+
+

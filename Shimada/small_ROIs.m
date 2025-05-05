@@ -2,42 +2,71 @@
 % Used remove small ROIs with ESD < threshold (10 um here) to standardize data 
 % collected in 2019, 2021 and 2023 using different IFCBs and IFCB detection
 % settings.
-% Size threshold determined using sizefreqhistogram_byROI.
+% Size threshold determined from inspection of sizefreqhistogram_byROI.m.
 % Stephanie K. Moore, February 2025
 clear
 
 filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';
 addpath(genpath(filepath)); % add new data to search path
-threshold=10;
+summarydir = 'C:\Users\ifcbuser\Documents\GitHub\ifcb-data-science\IFCB-Data\Shimada\class\'; %where you want the summary file to go
+threshold = 10;
 
 %% load in data
-load([filepath 'Shimada\Data\class_eqdiam_biovol_class_byROI.mat'], 'BiEq', 'class2useTB'); %load IFCB data that excludes small ROIs with ESD<10 um
+load([filepath 'Shimada\Data\class_eqdiam_biovol_class_byROI.mat'], 'BiEq', 'class2useTB'); %load IFCB data from summarize_class_cells_biovol_size_byROI.m
 
 %% remove ROIs with ESD < threshold & sum up everything
 BiEq_threshold = BiEq;
 
 %pre-allocate
 classcount_above_optthreshTB = NaN(length(BiEq_threshold),length(class2useTB));
+classbiovol_above_optthreshTB = classcount_above_optthreshTB;
 filelistTB = cell(length(BiEq_threshold),1);
 mdateTB = NaN(length(BiEq_threshold),1);
 ml_analyzedTB = NaN(length(BiEq_threshold),1);
 
+%find & remove particles < threshold, sum up everything remaining
 for i = 1:length(BiEq_threshold)
     f = find(BiEq_threshold(i).eqdiam<threshold);
-    BiEq_threshold(i).roi(f)=[]; BiEq_threshold(i).eqdiam(f)=[]; BiEq_threshold(i).class_opt(f)=[]; BiEq_threshold(i).class_wta(f)=[]; 
+    BiEq_threshold(i).roi(f)=[]; BiEq_threshold(i).eqdiam(f)=[]; BiEq_threshold(i).biovol(f)=[]; BiEq_threshold(i).class_opt(f)=[]; BiEq_threshold(i).class_wta(f)=[]; 
     for j = 1:length(class2useTB)
         ind = strmatch(class2useTB(j), BiEq_threshold(i).class_opt);
         classcount_above_optthreshTB(i,j) = size(ind,1);
+        classbiovol_above_optthreshTB(i,j) = sum(BiEq_threshold.biovol(ind)); 
+        clear ind
     end
     filelistTB(i) = BiEq_threshold(i).filename;
     mdateTB = BiEq_threshold(i).mdate;
     ml_analyzedTB = BiEq_threshold(i).ml_analyzed;
+    clear f 
 end
 clear i j
 
 %% save new summary file
-save([filepath 'summary_19-23Hake_cells_sizethresh'] ,'*TB')
+save([filepath 'summary_biovol_allTB_szthr'] ,'*TB')
 
 disp('Summary file stored here:')
-disp([summarydir 'summary_19-23Hake_cells_sizethresh'])
+disp([summarydir 'summary_biovol_allTB_szthr'])
 
+%% sanity check
+%run this code block to sum up everything & compare with output from summarize_class_cells_biovol_size.m
+
+%pre-allocate
+classcount_above_optthreshTB_check = NaN(length(BiEq),length(class2useTB));
+
+%sum up everything
+for i = 1:length(BiEq)
+    for j = 1:length(class2useTB)
+        ind = strmatch(class2useTB(j), BiEq(i).class_opt);
+        classcount_above_optthreshTB_check(i,j) = size(ind,1);
+        clear ind
+    end
+end
+clear i j
+
+%load classcount_above_optthreshTB from original summary file
+load('C:\Users\Stephanie.Moore\Documents\GitHub\ifcb-data-science\IFCB-Data\Shimada\class\summary_biovol_allTB.mat',...
+   'classcount_above_optthreshTB');
+
+result = isequal(classcount_above_optthreshTB_check,classcount_above_optthreshTB);
+
+result %will return 1 if the same and 0 if different

@@ -2,10 +2,10 @@
 % merge IFCB data, sensor data, and krill data
 % !!IMPORTANT!! Can load two different IFCB summary files; 
 % the summary_biovol_allTB.mat summary file has all of the IFCB data, whereas 
-% small ROIs with ESD<10 um have been removed from the 
-% class_cells_biovol_eqdiam_sizethresh.mat summary file in order to standardize 
-% the data across the different years and instruments. The ESDthreshold of 10 um 
-% was chosen based on examining size frequency histograms of the 2019, 2021 and 2023 data.  
+% summary_biovol_allTB_szthr.mat has had small ROIs with ESD < threshold removed
+% in order to standardize the data across the different years and instruments. 
+% The ESD threshold is chosen based on examining size frequency histograms 
+% of the 2019, 2021 and 2023 data from sizefreqhistogram_byROI.m.  
 % MAKE SURE TO CHANGE SAVED SUMMARY FILE NAME AT END OF SCRIPT DEPENDING ON WHICH FILE IS LOADED!
 
 clear;
@@ -24,22 +24,13 @@ TEMP=[S19.TEMP;S21.TEMP;S23.TEMP]; SAL=[S19.SAL;S21.SAL;S23.SAL]; FL=[S19.FL;S21
 T=timetable(DT,LAT,LON,TEMP,SAL,FL);
 
 %% Load 2019-2023 IFCB data
-
 %%%% load original summary file with all IFCB data
 load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB.mat'],...
    'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
 
-%%%% load modified summary file that excludes small ROIs with an ESD<10 um  
-% load([filepath 'Shimada\Data\class_cells_biovol_eqdiam_sizethresh.mat'],...
-%     'class2useTB','classcount_above_optthresh_sizethreshTB','classbiovol_above_optthresh_sizethreshTB','filelistTB','mdateTB','ml_analyzedTB');
-% classcount_above_optthreshTB=classcount_above_optthresh_sizethreshTB;
-% classbiovol_above_optthreshTB=classbiovol_above_optthresh_sizethreshTB;
-
-%%%% load modified summary file that ONLY INCLUDES small ROIs with an ESD<10 um  
-% load([filepath 'Shimada\Data\class_cells_biovol_eqdiam_sizethresh.mat'],...
-%     'class2useTB','classcount_above_optthresh_lessthansizethreshTB','classbiovol_above_optthresh_lessthansizethreshTB','filelistTB','mdateTB','ml_analyzedTB');
-% classcount_above_optthreshTB=classcount_above_optthresh_lessthansizethreshTB;
-% classbiovol_above_optthreshTB=classbiovol_above_optthresh_lessthansizethreshTB;
+%%%% load modified summary file that excludes small ROIs with an ESD < theshold  
+% load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB_szthr.mat'],...
+%    'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
 
 %% Format 2019-2023 IFCB data
 
@@ -225,12 +216,8 @@ fx_unclassified_PB=mean(PB.unclassified./(PB.unclassified + PB.Akashiwo + PB.Ale
 save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells.mat','P');
 save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB');
 
-%%%% save merged data using summary IFCB file that excludes small ROIs with ESD<10 um
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizethresh.mat','P');
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizethresh.mat','PB');
-
-%%%% save merged data using summary IFCB file that excludes small ROIs with ESD<10 um
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_lessthansizethresh.mat','P');
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_lessthansizethresh.mat','PB');
+%%%% save merged data using summary IFCB file that excludes small ROIs with an ESD < threshold
+% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_szthr.mat','P');
+% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_szthr.mat','PB');
 
 clearvars E T idx X
