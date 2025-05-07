@@ -1,9 +1,10 @@
-function [ ] = summarize_class_cells_biovol_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
-%function [ ] = summarize_class_cells_biovol_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
-% Inputs class and features files and outputs a summary file of cell counts 
-% and ESD for all ROIs for 2 different classifier outputs (winner takes all, opt score threshold)
+function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
+%function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roibasepath_generic,classpath_generic,micron_factor,yrrange)
+% Inputs class and features files and outputs a summary file of counts and 
+% equivalent spherical diameter for each roi for 2 classifier outputs 
+% (winner takes all, opt score threshold)
 %
-% Stephanie K. Moore, February 2025
+% A.D. Fischer, March 2025
 %
 % %Example inputs
 % summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
@@ -13,15 +14,12 @@ function [ ] = summarize_class_cells_biovol_size_byROI(summarydir,feapath_generi
 % yrrange = [2019 2021 2023];  %years that you want summarized
 % micron_factor = 1/3.8; %pixel to micron conversion
 
-%%%% USER specify size cutoff (ESD in microns)
-ESDthreshold = 10;
-
 classfiles = [];
 filelistTB = [];
 feafiles = [];
 hdrname = [];
 
-%% get the names and paths of the files to summarize
+%get the names and paths of the files to summarize
 for i = 1:length(yrrange)
     yr = yrrange(i);  
     classpath = regexprep(classpath_generic, 'xxxx', num2str(yr));
@@ -48,102 +46,79 @@ for i = 1:length(yrrange)
    clearvars temp names pathall classpath feapath roibasepath xall fall yr    
 end
 
-mdateTB = IFCB_file2date(filelistTB);
-ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
-
-runtypeTB=filelistTB;
-filecommentTB=filelistTB;
+% preallocate
+load([summarydir 'debug'], 'mdateTB', 'ml_analyzedTB'); %saved variables below to save time while debugging
+% mdateTB = IFCB_file2date(filelistTB);
+% ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
 
 load(classfiles{1},'class2useTB');
-num2dostr = num2str(length(classfiles));
+runtypeTB=filelistTB; %contents will be overwritten
+filecommentTB=filelistTB; %contents will be overwritten
 
-%%%% preallocate for ROIs > ESDthreshold
-classcount_sizethreshTB = NaN(length(classfiles),length(class2useTB));
-classbiovol_sizethreshTB = classcount_sizethreshTB;
-classcount_above_optthresh_sizethreshTB = classcount_sizethreshTB;
-classbiovol_above_optthresh_sizethreshTB = classcount_sizethreshTB;
-
-%%%% preallocate for ROIs<ESDthreshold
-classcount_lessthansizethreshTB = classcount_sizethreshTB;
-classbiovol_lessthansizethreshTB = classcount_sizethreshTB;
-classcount_above_optthresh_lessthansizethreshTB = classcount_sizethreshTB;
-classbiovol_above_optthresh_lessthansizethreshTB = classcount_sizethreshTB;
-
-%% count class cells and biovolume for ROIs > and < ESDthreshold 
-for i = 1:length(filelistTB)
-    if ~rem(i,100), disp(['reading ' num2str(i) ' of ' num2dostr]), end  
+%%%% extract info per ROI
+for i = 1:length(classfiles)
     
-    classfile = classfiles{i};
-    load(classfile,'roinum','TBclass','TBclass_above_threshold');
-    
-    feafile = feafiles{i};
-    feastruct = importdata(feafile);
-    ind = strmatch('Biovolume', feastruct.colheaders);
-    biovol = feastruct.data(:,ind)*micron_factor.^3; clearvars ind;
-    ind = strmatch('EquivDiameter', feastruct.colheaders);
-    eqdiam = feastruct.data(:,ind)*micron_factor; clearvars ind;
-    ind = strmatch('roi_number', feastruct.colheaders);
-    roi = feastruct.data(:,ind);
+    %extract roi#, ESD & biovolume from feature files
+    feastruct = importdata(feafiles{i}); %load in feature file    
+    ind = strcmp('roi_number',feastruct.colheaders); %colheaders might be textdata
+    roi = feastruct.data(:,ind); clear ind;    
+    ind = strcmp('EquivDiameter',feastruct.colheaders); %colheaders might be textdata
+    eqdiam = feastruct.data(:,ind)*micron_factor; clear ind;
+    ind = strcmp('Biovolume', feastruct.textdata);
+    biovol = feastruct.data(:,ind)*micron_factor.^3; clear ind;
 
-    %find ROIs<ESDthreshold
-    idx = eqdiam<ESDthreshold; 
-    %%%use fine instead and roi(f) would be the index used in count
-    %roinum = roi(idx)
-    %roi # = (roi (eqdiam<ESDthreshold))
+    %use feature roi# to extract classified data for each roi
+    load(classfiles{i},'roinum','TBclass','TBclass_above_threshold'); %load in class file    
+    %the two lines below incorrectly indexed the roi numbers for small particles - replaced with loop
+    %class_opt=TBclass_above_threshold(roi); %opt score threshold 
+    %class_wta=TBclass(roi); %winner takes all
+    ind=NaN*length(roi);
+    for j = 1:length(roi)
+        f = find(roi(j) == roinum);
+        ind(j) = f;
+        clear f
+    end
+    class_opt=TBclass_above_threshold(ind); %opt score threshold
+    class_wta=TBclass(ind); %winner takes all
+    clear ind
 
-    % sum up classes
-    classcount = NaN(length(class2useTB),1);
-    classcount_above_optthresh = classcount;
-    classbiovol = classcount;
-    classbiovol_above_optthresh = classcount;
-
-    classcount_lessthansizethresh = classcount;
-    classcount_above_optthresh_lessthansizethresh = classcount;
-    classbiovol_lessthansizethresh = classcount;
-    classbiovol_above_optthresh_lessthansizethresh = classcount;
-
-    for ii = 1:length(class2useTB)
-        ind = strmatch(class2useTB(ii), TBclass(~idx));
-        ind2 = strmatch(class2useTB(ii), TBclass(idx));
-        classcount(ii) = size(ind,1);
-        classbiovol(ii) = sum(biovol(ind));  
-        classcount_lessthansizethresh(ii) = size(ind2,1);
-        classbiovol_lessthansizethresh(ii)= sum(biovol(ind2)); clearvars ind ind2;  
-        
-        ind = strmatch(class2useTB(ii), TBclass_above_threshold(~idx));
-        ind2 = strmatch(class2useTB(ii), TBclass_above_threshold(idx));
-        classcount_above_optthresh(ii) = size(ind,1);
-        classbiovol_above_optthresh(ii) = sum(biovol(ind)); 
-        classcount_above_optthresh_lessthansizethresh(ii) = size(ind2,1); 
-        classbiovol_above_optthresh_lessthansizethresh(ii) = sum(biovol(ind2)); clearvars ind ind2;  
+    % test if there's a difference in the length of rois in the feature files (flen) and class files (clen)  
+    % display message if there's a problem    
+    clen=roinum(end); flen=roi(end);
+    if clen==flen
+    else
+        disp([feafiles{i} ': unequal rois in class (' num2str(clen) ') and feature files (' num2str(flen) ')']) 
     end
 
-    classcount_sizethreshTB(i,:) = classcount;
-    classbiovol_sizethreshTB(i,:) = classbiovol;
-    classcount_above_optthresh_sizethreshTB(i,:) = classcount_above_optthresh;
-    classbiovol_above_optthresh_sizethreshTB(i,:) = classbiovol_above_optthresh;
-
-    classcount_lessthansizethreshTB(i,:) = classcount_lessthansizethresh;
-    classbiovol_lessthansizethreshTB(i,:) = classbiovol_lessthansizethresh;
-    classcount_above_optthresh_lessthansizethreshTB(i,:) = classcount_above_optthresh_lessthansizethresh;
-    classbiovol_above_optthresh_lessthansizethreshTB(i,:) = classbiovol_above_optthresh_lessthansizethresh;
-
+    %extract filecomment and runtype data from hdr file
     hdr=IFCBxxx_readhdr2(hdrname{i});
-    runtypeTB{i}=hdr.runtype;
-    filecommentTB{i}=hdr.filecomment;    
+    runtypeTB{i}=hdr.runtype; % the {i} here might not be necessary, need to check
+    filecommentTB{i}=hdr.filecomment; % the {i} here might not be necessary, need to check   
 
-    clearvars idx
+    %summarize in a structure
+    BiEq(i).filename=filelistTB(i); % you will need to check the syntax of filelist to filename conversion
+    BiEq(i).mdate=mdateTB(i);
+    BiEq(i).ml_analyzed=ml_analyzedTB(i); 
+    BiEq(i).filecomment=filecommentTB{i};
+    BiEq(i).runtype=runtypeTB{i};    
+    BiEq(i).roi=roi;
+    BiEq(i).eqdiam=eqdiam;  
+    BiEq(i).biovol=biovol;  
+    BiEq(i).class_opt=class_opt;
+    BiEq(i).class_wta=class_wta;    
+
+    clearvars roi eqdiam biovol class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct
+
 end
 
-%% save summary file
-
-note1 = 'Biovolume: cubed micrometers';
-note2= 'Equivalent spherical diameter: micrometers';
-note3= ['ESD size threshold=' num2str(ESDthreshold)];
-
-save([summarydir 'class_cells_biovol_eqdiam_sizethresh'], '*TB', 'note1', 'note2', 'note3')
+save([summarydir 'class_eqdiam_biovol_class_byROI'], 'BiEq', 'class2useTB', 'micron_factor')
 
 disp('Summary file stored here:')
-disp([summarydir 'class_cells_biovol_eqdiam_sizethresh'])
+disp([summarydir 'class_eqdiam_biovol_class_byROI'])
 
 end
+
+
+
+
+

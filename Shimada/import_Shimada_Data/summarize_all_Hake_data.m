@@ -25,16 +25,16 @@ T=timetable(DT,LAT,LON,TEMP,SAL,FL);
 
 %% Load 2019-2023 IFCB data
 %%%% load original summary file with all IFCB data
-load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB.mat'],...
-   'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
-
-%%%% load modified summary file that excludes small ROIs with an ESD < theshold  
-% load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB_szthr.mat'],...
+% load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB.mat'],...
 %    'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
+
+%%%% load modified summary file created using small_ROIs.m that excludes small ROIs with an ESD < theshold  
+load([filepath 'Shimada\Data\summary_biovol_allTB_szthr.mat'],...
+   'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
 
 %% Format 2019-2023 IFCB data
 
-dt=datetime(mdateTB,'convertfrom','datenum'); dt.Format='yyyy-MM-dd HH:mm:ss';        
+dt = datetime(mdateTB,'convertfrom','datenum'); dt.Format = 'yyyy-MM-dd HH:mm:ss';        
 cellsmL = classcount_above_optthreshTB./ml_analyzedTB;    
 bvmL = classbiovol_above_optthreshTB./ml_analyzedTB;    
 
@@ -205,19 +205,22 @@ clear i idx
 %% Calculate proportion of unclassified cells/biomass
 fx_unclassified_P=mean(P.unclassified./(P.unclassified + P.Akashiwo + P.Alexandrium_catenella + P.Asterionellopsis + P.Cera_Dact_Deto_Guin + P.Chaetoceros + P.Cylindrotheca + ...
     P.Dictyocha + P.Dinophysis + P.Eucampia + P.Gymnodinium + P.Hete_Scri + P.Katodinium + P.Lauderia + P.Leptocylindrus + P.Navicula + P.Nitzschia + ...
-    P.Prob_Rhiz + P.Skeletonema + P.Thalassiosira + P.Pseudonitzschia));
+    P.Prob_Rhiz + P.Skeletonema + P.Thalassiosira + P.Pseudonitzschia),"omitnan");
 
 fx_unclassified_PB=mean(PB.unclassified./(PB.unclassified + PB.Akashiwo + PB.Alexandrium_catenella + PB.Asterionellopsis + PB.Cera_Dact_Deto_Guin + PB.Chaetoceros + PB.Cylindrotheca + ...
     PB.Dictyocha + PB.Dinophysis + PB.Eucampia + PB.Gymnodinium + PB.Hete_Scri + PB.Katodinium + PB.Lauderia + PB.Leptocylindrus + PB.Navicula + PB.Nitzschia + ...
-    PB.Prob_Rhiz + PB.Skeletonema + PB.Thalassiosira + PB.Pseudonitzschia));
+    PB.Prob_Rhiz + PB.Skeletonema + PB.Thalassiosira + PB.Pseudonitzschia), "omitnan");
 
 %% format for .csv file
 %%%% save merged data with all of the IFCB data
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells.mat','P');
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB');
+% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells.mat','P');
+% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume.mat','PB');
 
 %%%% save merged data using summary IFCB file that excludes small ROIs with an ESD < threshold
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_szthr.mat','P');
-% save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_szthr.mat','PB');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_szthr.mat','P');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_szthr.mat','PB');
 
 clearvars E T idx X
+
+%% export .csv file for SDM
+writetimetable(PB,[filepath 'Shimada\Data\PB_NASC_v4.csv'])
