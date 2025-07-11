@@ -4,7 +4,7 @@ function [ ] = summarize_class_cells_size_byROI(summarydir,feapath_generic,roiba
 % equivalent spherical diameter for each roi for 2 classifier outputs 
 % (winner takes all, opt score threshold)
 %
-% A.D. Fischer, March 2025
+% Stephanie K. Moore edited A.D. Fischer, March 2025
 %
 % %Example inputs
 % summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
