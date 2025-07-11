@@ -2,7 +2,9 @@
 % used to evaluate differences in IFCBs and IFCB detection settings
 % the eqdiam_biovol_yr.mat file containing the ESD data is produced by the
 % summarize_features_biovol_size_byROI.m script in the IFCB-Tools folder
-% NOTE! EquivDiameter in the feature file is ECD, not ESD.
+% NOTE! EquivDiameter in the feature file is ECD, not ESD. 
+% ESD is calculated using biovol2esd.m
+%
 % Stephanie K. Moore modified script by A.D. Fischer
 clear
 
