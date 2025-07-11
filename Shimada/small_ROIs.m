@@ -1,5 +1,5 @@
-%% remove small ROIs with ESD < threshold & create modified summary file
-% Used remove small ROIs with ESD < threshold (10 um here) to standardize data 
+%% remove small ROIs with ECD (i.e., eqdiam) < threshold & create modified summary file
+% Used remove small ROIs with ECD < threshold (10 um here) to standardize data 
 % collected in 2019, 2021 and 2023 using different IFCBs and IFCB detection settings.
 % Size threshold determined from inspection of sizefreqhistogram_byROI.m.
 %

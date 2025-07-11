@@ -101,17 +101,17 @@ for i = 1:length(classfiles)
     %summarize in a structure
     BiEq(i).filename = filelistTB(i); % you will need to check the syntax of filelist to filename conversion
     BiEq(i).mdate = mdateTB(i);
-    BiEq(i).ml_analyzed = ml_analyzedTB(i); 
-    BiEq(i).filecomment = filecommentTB{i};
-    BiEq(i).runtype = runtypeTB{i};    
-    BiEq(i).roi = roi;
-    BiEq(i).eqdiam = eqdiam;
+    BiEq(i).ml_analyzed=ml_analyzedTB(i); 
+    BiEq(i).filecomment=filecommentTB{i};
+    BiEq(i).runtype=runtypeTB{i};    
+    BiEq(i).roi=roi;
+    BiEq(i).eqdiam=eqdiam;
     BiEq(i).ESD = ESD;
-    BiEq(i).biovol = biovol;  
-    BiEq(i).class_opt = class_opt;
-    BiEq(i).class_wta = class_wta;    
+    BiEq(i).biovol=biovol;  
+    BiEq(i).class_opt=class_opt;
+    BiEq(i).class_wta=class_wta;    
 
-    clearvars roi eqdiam ESD biovol class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct
+    clearvars roi eqdiam biovol class_opt class_wta hdr feafile roinum TBclass TBclass_above_threshold feastruct
 
 end
 
