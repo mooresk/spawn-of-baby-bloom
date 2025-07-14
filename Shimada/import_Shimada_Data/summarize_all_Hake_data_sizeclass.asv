@@ -1,12 +1,9 @@
-%% Make summary file of 2019, 2021 and 2023 Shimada data
+%% Make summary file of 2019, 2021 and 2023 Shimada data using size classes instead of taxonomic class list
 % merge IFCB data, sensor data, and krill data
-% !!IMPORTANT!! Can load two different IFCB summary files; 
-% the summary_biovol_allTB.mat summary file has all of the IFCB data, whereas 
-% summary_biovol_allTB_szthr.mat has had small ROIs with ESD < threshold removed
+% Uses the summary_biovol_sizeclass summary file that ignores small ROIs with ESD < threshold 
 % in order to standardize the data across the different years and instruments. 
 % The ESD threshold is chosen based on examining size frequency histograms 
 % of the 2019, 2021 and 2023 data from sizefreqhistogram_byROI.m.  
-% MAKE SURE TO CHANGE SAVED SUMMARY FILE NAME AT END OF SCRIPT DEPENDING ON WHICH FILE IS LOADED!
 
 clear;
 
@@ -24,75 +21,29 @@ TEMP=[S19.TEMP;S21.TEMP;S23.TEMP]; SAL=[S19.SAL;S21.SAL;S23.SAL]; FL=[S19.FL;S21
 T=timetable(DT,LAT,LON,TEMP,SAL,FL);
 
 %% Load 2019-2023 IFCB data
-%%%% load original summary file with all IFCB data
-% load([ifcbpath 'IFCB-Data\Shimada\class\summary_biovol_allTB.mat'],...
-%    'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
 
-%%%% load modified summary file created using small_ROIs.m that excludes small ROIs with an ESD < theshold  
-load([filepath 'Shimada\Data\summary_biovol_allTB_szthr.mat'],...
-   'class2useTB','classcount_above_optthreshTB','classbiovol_above_optthreshTB','filelistTB','mdateTB','ml_analyzedTB');
+%%%% load summary file of size classes that ignores small ROIs with an ESD < theshold  
+load([filepath 'Shimada\Data\summary_biovol_sizeclass.mat'],...
+   'sizeclass2use', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate');
 
 %% Format 2019-2023 IFCB data
 
-dt = datetime(mdateTB,'convertfrom','datenum'); dt.Format = 'yyyy-MM-dd HH:mm:ss';        
-cellsmL = classcount_above_optthreshTB./ml_analyzedTB;    
-bvmL = classbiovol_above_optthreshTB./ml_analyzedTB;    
+dt = datetime(mdate,'convertfrom','datenum'); dt.Format = 'yyyy-MM-dd HH:mm:ss';        
+cellsmL = sizeclasscount./ml_analyzed;    
+bvmL = sizeclassbiovol./ml_analyzed;    
 
-%%%% sum PN biovolume into one variable all variables except and PN from regular summary
-id1=find(contains(class2useTB,'Pseudo-nitzschia_large_1cell')); 
-id2=find(contains(class2useTB,'Pseudo-nitzschia_large_2cell')); 
-id3=find(contains(class2useTB,'Pseudo-nitzschia_large_3cell')); 
-PN_bvmL = sum(classbiovol_above_optthreshTB(:,[id1,id2,id3]),2)./ml_analyzedTB;
-PN1 = sum(classcount_above_optthreshTB(:,id1),2);
-PN2 = 2*sum(classcount_above_optthreshTB(:,id2),2);
-PN3 = 3.5*sum(classcount_above_optthreshTB(:,id3),2);
-PN_cellsmL = sum([PN1,PN2,PN3],2)./ml_analyzedTB;
-
-%%%% get ratio of of dinos to diatoms 
-% sum diatom biovolume
-[idiatom,~]=get_class_ind(class2useTB,'diatom',[ifcbpath 'IFCB-Tools\convert_index_class\class_indices']); %get_class_ind function A.Fischer wrote in IFCB_Tools
-[idino,~]=get_class_ind(class2useTB,'dinoflagellate',[ifcbpath 'IFCB-Tools\convert_index_class\class_indices']);
-diatom_bvmL=sum(classbiovol_above_optthreshTB(:,idiatom),2)./ml_analyzedTB;
-dino_bvmL=sum(classbiovol_above_optthreshTB(:,idino),2)./ml_analyzedTB;
-dino_diat_ratio=log10((dino_bvmL+1)./(diatom_bvmL+1)); %log scale so don't bias denominator low. see Isles 2020. add +1 so avoid Inf
-
-%%%% rename grouped classes 
-class2useTB(strcmp('Cerataulina,Dactyliosolen,Detonula,Guinardia',class2useTB))={'Cera_Dact_Deto_Guin'};
-class2useTB(strcmp('Chaetoceros_chain,Chaetoceros_single',class2useTB))={'Chaetoceros'};
-class2useTB(strcmp('Dinophysis_acuminata,Dinophysis_acuta,Dinophysis_caudata,Dinophysis_fortii,Dinophysis_norvegica,Dinophysis_odiosa,Dinophysis_parva,Dinophysis_rotundata,Dinophysis_tripos',class2useTB))={'Dinophysis'};
-class2useTB(strcmp('Heterocapsa_triquetra,Scrippsiella',class2useTB))={'Hete_Scri'};
-class2useTB(strcmp('Thalassiosira_chain',class2useTB))={'Thalassiosira'};
-class2useTB(strcmp('Proboscia,Rhizosolenia',class2useTB))={'Prob_Rhiz'};
-
-%%%% remove unclassified or PN from regular summary
-idx=contains(class2useTB,'Pseudo-nitzschia'); cellsmL(:,idx)=[]; bvmL(:,idx)=[]; class2useTB(idx)=[];
-%idx=contains(class2useTB,'unclassified'); cellsmL(:,idx)=[]; bvmL(:,idx)=[]; class2useTB(idx)=[];
-
-%%%% add PN back
-class2useTB(end+1)={'Pseudonitzschia'};
-cellsmL(:,end+1)=PN_cellsmL;
-bvmL(:,end+1)=PN_bvmL;
-
-clearvars PN_bvmL PN_cellsmL ml_analyzedTB idx classcount_above_optthreshTB classbiovol_above_optthreshTB mdateTB id1 id2 id3
-
-%%%% add biovol
-class2useTB_b=class2useTB;
-bvmL(:,end+1)=diatom_bvmL;
-bvmL(:,end+1)=dino_bvmL;
-bvmL(:,end+1)=dino_diat_ratio;
-class2useTB_b(end+1)={'diatom'};
-class2useTB_b(end+1)={'dino'};
-class2useTB_b(end+1)={'dino_diat_ratio'};
+% get string with variable names for size classes
+varNames = num2str(sizeclass2use(1:end-1));
 
 %%%% round IFCB data to nearest minute and match with environmental data
 dt = dateshift(dt,'start','minute'); 
-TT = array2timetable(cellsmL,'RowTimes',dt,'VariableNames',class2useTB(1:end));
-TT = addvars(TT,filelistTB,'Before',class2useTB(1));
+TT = array2timetable(cellsmL,'RowTimes',dt,'VariableNames',varNames);
+TT = addvars(TT,filelist,'Before',sizeclass2use(1));
 
-TB = array2timetable(bvmL,'RowTimes',dt,'VariableNames',class2useTB_b(1:end));
-TB = addvars(TB,filelistTB,'Before',class2useTB(1));
+TB = array2timetable(bvmL,'RowTimes',dt,'VariableNames',varNames);
+TB = addvars(TB,filelist,'Before',sizeclass2use(1));
 
-clearvars class2useTB th dt cellsmL filelistTB i idx ml_analyzedTB mdateTB 
+clearvars dt cellsmL bvml ml_analyzedTB mdateTB 
 
 %% Merge environmental data with IFCB data and calculate distance between each IFCB sample and the coast
 P=synchronize(TT,T,'first');

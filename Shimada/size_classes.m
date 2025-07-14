@@ -12,18 +12,17 @@ threshold = 10;
 load([filepath 'class_eqdiam_biovol_class_byROI.mat'], 'BiEq', 'class2useTB'); %load IFCB data from summarize_class_cells_biovol_size_byROI.m
 
 %% Generate size bins
-Y = log2(1):1/3:log2(50e6); %generates size classes from Dugenne et al 2024 
-% (https://doi.org/10.5194/essd-16-2971-2024) that are logarithmically spaced 
-% using a base of 2 and an increment of 1/3 so that a doubling in ESD occurs 
-% every third bin, with a range between 1–50,000,000 µm.
+Y = log2(1):1/3:log2(50e6); 
 YY = 2.^Y;
+% generates size classes from Dugenne et al 2024 (https://doi.org/10.5194/essd-16-2971-2024) that are logarithmically spaced 
+% using a base of 2 and an increment of 1/3 so that a doubling in ESD occurs every third bin, with a range between 1–50,000,000 µm.
 
 mxESD = NaN(1,length(BiEq));
 mnESD = NaN(1,length(BiEq));
 
 for i = 1:length(BiEq)
-    mxESD(i) = max(BiEq(i).eqdiam);
-    t = BiEq(i).eqdiam;
+    mxESD(i) = max(BiEq(i).ESD);
+    t = BiEq(i).ESD;
     t(t == 0) = NaN;
     mnESD(i) = min(t);
     clear t
@@ -48,8 +47,8 @@ imax = f(1); %this is the index for the upper end in YY
 
 % OPTION 2: 10 um size threshold
 ff = find(YY<threshold); 
-YYmin = YY(ff(end+1)); %this selects 10.0794 ESD
-imin = ff(end); %this is the index for the lower end in YY
+YYmin = YY(ff(end)+1); %this selects 10.0794 ESD
+imin = ff(end)+1; %this is the index for the lower end in YY
 
 clear f ff
 
@@ -57,7 +56,7 @@ sizeclass2use = YY(imin:imax);
 
 %% sum up size classes for ROIs
 %pre-allocate
-sizeclasscount = NaN(length(BiEq),length(sizeclass2use));
+sizeclasscount = NaN(length(BiEq),length(sizeclass2use)-1);
 sizeclassbiovol = sizeclasscount;
 filelist = cell(length(BiEq),1);
 mdate = NaN(length(BiEq),1);
@@ -65,18 +64,11 @@ ml_analyzed = NaN(length(BiEq),1);
 
 %sum counts and biovolume for particles in each size bin
 for i = 1:length(BiEq)
-    for j = 1:length(sizeclass2use)
-        if j < length(sizeclass2use)
-            ind = find(BiEq(i).eqdiam>=sizeclass2use(j) & BiEq(i).eqdiam<sizeclass2use(j+1));
-            sizeclasscount(i,j) = size(ind,1);
-            sizeclassbiovol(i,j) = sum(BiEq(i).biovol(ind)); 
-            clear ind
-        else
-            ind = find(BiEq(i).eqdiam>=sizeclass2use(j)); 
-            sizeclasscount(i,j) = size(ind,1);
-            sizeclassbiovol(i,j) = sum(BiEq(i).biovol(ind)); 
-            clear ind
-        end
+    for j = 1:length(sizeclass2use)-1
+        ind = find(BiEq(i).ESD>=sizeclass2use(j) & BiEq(i).ESD<sizeclass2use(j+1));
+        sizeclasscount(i,j) = size(ind,1);
+        sizeclassbiovol(i,j) = sum(BiEq(i).biovol(ind)); 
+        clear ind
     end
     filelist(i) = BiEq(i).filename;
     mdate(i) = BiEq(i).mdate;
@@ -85,6 +77,6 @@ end
 clear i j
 
 %% save new summary file
-save([summarydir 'summary_biovol_sizeclass'] ,'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate')
+save([summarydir 'summary_biovol_sizeclass'],'sizeclass2use', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate')
 disp('Summary file stored here:')
 disp([summarydir 'summary_biovol_sizeclass'])

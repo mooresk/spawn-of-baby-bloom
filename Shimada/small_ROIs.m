@@ -1,7 +1,8 @@
-%% remove small ROIs with ECD (i.e., eqdiam) < threshold & create modified summary file
-% Used remove small ROIs with ECD < threshold (10 um here) to standardize data 
+%% remove small ROIs with ESD < threshold & create modified summary file
+% Used remove small ROIs with ESD < threshold (10 um here) to standardize data 
 % collected in 2019, 2021 and 2023 using different IFCBs and IFCB detection settings.
 % Size threshold determined from inspection of sizefreqhistogram_byROI.m.
+% ESD is calculated using biovol2esd.m
 %
 % Stephanie K. Moore, February 2025
 %
@@ -26,8 +27,8 @@ mdateTB = NaN(length(BiEq),1);
 ml_analyzedTB = NaN(length(BiEq),1);
 
 for i = 1:length(BiEq)
-    f = find(BiEq(i).eqdiam<threshold);
-    ff = find(BiEq(i).eqdiam>=threshold);
+    f = find(BiEq(i).ESD<threshold);
+    ff = find(BiEq(i).ESD>=threshold);
     %sum counts and biovolume for particles > threshold
     for j = 1:length(class2useTB)
         ind = strmatch(class2useTB(j), BiEq(i).class_opt(ff));
