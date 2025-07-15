@@ -1,6 +1,7 @@
 %% Create a summary file for particle size classes
+%
 % Stephanie K. Moore, June 2025
-
+%
 clear
 
 %% load in data
@@ -53,7 +54,7 @@ imin = ff(end)+1; %this is the index for the lower end in YY
 clear f ff
 
 sizeclass2use = YY(imin:imax);
-sizeclass2useB = (pi*sizeclass2use^3)/6; %rearranged equation in biovol2esd.m to solve for biovol
+sizeclass2useB = (pi*sizeclass2use.^3)/6; %rearranged equation in biovol2esd.m to solve for biovol
 
 %% sum up size classes for ROIs
 %pre-allocate

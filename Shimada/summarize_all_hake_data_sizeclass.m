@@ -4,7 +4,9 @@
 % in order to standardize the data across the different years and instruments. 
 % The ESD threshold is chosen based on examining size frequency histograms 
 % of the 2019, 2021 and 2023 data from sizefreqhistogram_byROI.m.  
-
+%
+% Stephanie K. Moore, July 2025
+%
 clear;
 
 filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';

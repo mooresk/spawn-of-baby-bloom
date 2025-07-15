@@ -1,7 +1,6 @@
 function [ ] = summarize_features_biovol_size_byROI(roibasepath,feapath_base,summarydir,micron_factor,yr)
 %function [ ] = summarize_features_biovol_size_byROI(roibasepath,feapath_base,summarydir,micron_factor,yr)
-% Inputs features files and outputs a summary file of biovolume and 
-% equivalent spherical diameter using biovol2esd.m
+% Inputs feature files and outputs a summary file of biovolume and equivalent spherical diameter using biovol2esd.m
 %
 % Stephanie K. Moore modified A.D. Fischer to correct for ESD, July 2025
 %

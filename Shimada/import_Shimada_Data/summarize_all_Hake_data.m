@@ -1,13 +1,15 @@
 %% Make summary file of 2019, 2021 and 2023 Shimada data
-% merge IFCB data, sensor data, and krill data
-% !!IMPORTANT!! Can load two different IFCB summary files; 
-% the summary_biovol_allTB.mat summary file has all of the IFCB data, whereas 
-% summary_biovol_allTB_szthr.mat has had small ROIs with ESD < threshold removed
-% in order to standardize the data across the different years and instruments. 
+% Merge IFCB data, sensor data, and krill data !!IMPORTANT!! Can load two different IFCB summary files; 
+% (1) the summary_biovol_allTB.mat summary file has all of the IFCB data 
+% (2) the summary_biovol_allTB_szthr.mat has removed small ROIs with ESD < threshold in order to standardize 
+% the data across the different years and instruments. 
 % The ESD threshold is chosen based on examining size frequency histograms 
 % of the 2019, 2021 and 2023 data from sizefreqhistogram_byROI.m.  
+% 
 % MAKE SURE TO CHANGE SAVED SUMMARY FILE NAME AT END OF SCRIPT DEPENDING ON WHICH FILE IS LOADED!
-
+%
+% Stephanie K. Moore, 2025
+%
 clear;
 
 filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';
