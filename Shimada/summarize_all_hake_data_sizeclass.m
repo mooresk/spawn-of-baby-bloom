@@ -1,0 +1,166 @@
+%% Make summary file of 2019, 2021 and 2023 Shimada data using size classes instead of taxonomic class list
+% merge IFCB data, sensor data, and krill data
+% Uses the summary_biovol_sizeclass summary file that ignores small ROIs with ESD < threshold 
+% in order to standardize the data across the different years and instruments. 
+% The ESD threshold is chosen based on examining size frequency histograms 
+% of the 2019, 2021 and 2023 data from sizefreqhistogram_byROI.m.  
+
+clear;
+
+filepath = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\';
+ifcbpath = 'C:\Users\Stephanie.Moore\Documents\GitHub\ifcb-data-science\';
+addpath(genpath(filepath)); 
+addpath(genpath(ifcbpath));
+
+%% Load and merge 2019, 2021 and 2023 environmental sensor data
+S19=load([filepath 'Shimada\Data\environ_Shimada2019'],'DT','LON','LAT','TEMP','SAL','FL');
+S21=load([filepath 'Shimada\Data\environ_Shimada2021'],'DT','LON','LAT','TEMP','SAL','FL');
+S23=load([filepath 'Shimada\Data\environ_Shimada2023'],'DT','LON','LAT','TEMP','SAL','FL');
+DT=[S19.DT;S21.DT;S23.DT]; LON=[S19.LON;S21.LON;S23.LON]; LAT=[S19.LAT;S21.LAT;S23.LAT];
+TEMP=[S19.TEMP;S21.TEMP;S23.TEMP]; SAL=[S19.SAL;S21.SAL;S23.SAL]; FL=[S19.FL;S21.FL;S23.FL];
+T=timetable(DT,LAT,LON,TEMP,SAL,FL);
+
+%% Load 2019-2023 IFCB data
+
+%%%% load summary file of size classes that ignores small ROIs with an ESD < theshold  
+load([filepath 'Shimada\Data\summary_biovol_sizeclass.mat'],...
+    'sizeclass2use', 'sizeclass2useB', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate');
+
+%% Format 2019-2023 IFCB data
+
+dt = datetime(mdate,'convertfrom','datenum'); dt.Format = 'yyyy-MM-dd HH:mm:ss';        
+cellsmL = sizeclasscount./ml_analyzed;    
+bvmL = sizeclassbiovol./ml_analyzed;    
+
+% get string with variable names for size classes
+for i=1:length(sizeclass2use)-1
+    varNames{i} = num2str(sizeclass2use(i));
+    varNamesB{i} = num2str(sizeclass2useB(i));
+end
+
+%%%% round IFCB data to nearest minute and match with environmental data
+dt = dateshift(dt,'start','minute'); 
+TT = array2timetable(cellsmL,'RowTimes',dt,'VariableNames',varNames);
+TT = addvars(TT,filelist,'Before',varNames(1));
+
+TB = array2timetable(bvmL,'RowTimes',dt,'VariableNames',varNamesB);
+TB = addvars(TB,filelist,'Before',varNamesB(1));
+
+clearvars dt cellsmL bvml ml_analyzed mdate
+
+%% Merge environmental data with IFCB data and calculate distance between each IFCB sample and the coast
+P=synchronize(TT,T,'first');
+PB=synchronize(TB,T,'first');
+
+% calculate distance to coast
+load([filepath 'Shimada\Data\coast_CCS.mat'],'coast');
+coast=coast((coast(:,2)>=32 & coast(:,2)<=50),:); %shorten this to latitide where we have IFCB data
+C.lat=coast(:,2); C.lon=coast(:,1);
+coast_km=NaN*P.LAT; %preallocate
+for i=1:(length(coast_km))
+    [dist,~]=(distance(P.LAT(i),P.LON(i),C.lat,C.lon)); % get all the possible combinations
+    coast_km(i) = deg2km(min(dist)); %find the minimum distance
+end
+
+P=addvars(P,coast_km);
+PB=addvars(PB,coast_km);
+
+PB=movevars(PB,{'LAT' 'LON' 'coast_km' 'TEMP' 'SAL' 'FL'},'Before','filelist');
+PB(isnan(PB.LAT),:)=[];
+
+% remove non biovolume
+P=removevars(P,{'TEMP' 'SAL' 'FL'});
+P=movevars(P,{'LAT' 'LON' 'coast_km'},'Before','filelist');
+P(isnan(P.LAT),:)=[];
+
+%% Set up the Import Options and import the krill data
+opts = delimitedTextImportOptions("NumVariables", 27);
+
+% specify range and delimiter
+opts.DataLines = [2, Inf];
+opts.Delimiter = ",";
+
+% specify column names and types
+opts.VariableNames = ["Year", "ID", "Survey", "Transect", "Interval", "NASC", "Lat_S", "Lat_M", "Lat_E", "Lon_S", "Lon_M", "Lon_E", "Date_S", "Date_M", "Date_E", "Time_S", "Time_M", "Time_E", "Ping_S", "Ping_M", "Ping_E", "Dist_S", "Dist_M", "Dist_E", "Date", "Frequency", "DepthBin"];
+opts.VariableTypes = ["double", "string", "string", "string", "double", "double", "double", "double", "double", "double", "double", "double", "string", "datetime", "string", "datetime", "datetime", "datetime", "double", "double", "double", "double", "double", "double", "datetime", "double", "string"];
+
+% specify file level properties
+opts.ExtraColumnsRule = "ignore";
+opts.EmptyLineRule = "read";
+
+% specify variable properties
+opts = setvaropts(opts, ["ID", "Survey", "Transect", "Date_S", "Date_E", "DepthBin"], "WhitespaceRule", "preserve");
+opts = setvaropts(opts, ["ID", "Survey", "Transect", "Date_S", "Date_E", "DepthBin"], "EmptyFieldRule", "auto");
+opts = setvaropts(opts, "Date_M", "InputFormat", "yyyy-MM-dd", "DatetimeFormat", "preserveinput");
+opts = setvaropts(opts, "Time_S", "InputFormat", "HH:mm:ss", "DatetimeFormat", "preserveinput");
+opts = setvaropts(opts, "Time_M", "InputFormat", "HH:mm:ss", "DatetimeFormat", "preserveinput");
+opts = setvaropts(opts, "Time_E", "InputFormat", "HH:mm:ss", "DatetimeFormat", "preserveinput");
+opts = setvaropts(opts, "Date", "InputFormat", "yyyy-MM-dd", "DatetimeFormat", "preserveinput");
+
+% import the data
+krill = readtable([filepath 'Shimada\Data\Combine_0.5nmixWC_2019-2023.csv'], opts);
+
+% combine date and time from separate variables
+%%%% preallocate
+Date_S_t=NaT(height(krill),1);
+Date_E_t=NaT(height(krill),1);
+krill.myDatetime_S=NaT(height(krill),1);
+krill.myDatetime_M=NaT(height(krill),1);
+krill.myDatetime_E=NaT(height(krill),1);
+
+for i=1:height(krill)
+    Date_S_t(i) = datetime(krill.Date_S(i),'InputFormat','yyyyMMdd');
+    Date_E_t(i) = datetime(krill.Date_E(i),'InputFormat','yyyyMMdd');
+end
+
+% clear temporary variables
+clear i
+
+Date_M_t = krill.Date_M;
+
+Date_S_t.Format = 'dd.MM.uuuu HH:mm:ss';
+Date_M_t.Format = 'dd.MM.uuuu HH:mm:ss';
+Date_E_t.Format = 'dd.MM.uuuu HH:mm:ss';
+
+Time_S_t = krill.Time_S;
+Time_M_t = krill.Time_M;
+Time_E_t = krill.Time_E;
+
+Time_S_t.Format = 'dd.MM.uuuu HH:mm:ss';
+Time_M_t.Format = 'dd.MM.uuuu HH:mm:ss';
+Time_E_t.Format = 'dd.MM.uuuu HH:mm:ss';
+
+krill.myDatetime_S = Date_S_t + timeofday(Time_S_t);
+krill.myDatetime_M = Date_M_t + timeofday(Time_M_t);
+krill.myDatetime_E = Date_E_t + timeofday(Time_E_t);
+
+% clear temporary variables
+clear opts Date_S_t Date_M_t Date_E_t Time_S_t Time_M_t Time_E_t i
+
+%% Match IFCB and krill data
+% for each IFCB sample, find the NASC measurements for 0.5 nmi bins that start no more than 10 min before the IFCB sample and end no more than 10 min after
+%%%% preallocate
+PB.avNASC=NaN(height(PB),1);
+PB.transect=strings(height(PB),1);
+
+for i = 1:height(PB)
+    idx = find(krill.myDatetime_S >= PB.DT(i) - minutes(10) & krill.myDatetime_E <= PB.DT(i) + minutes(10));
+    if idx
+        PB.avNASC(i) = mean(krill.NASC(idx));
+        PB.transect(i) = strtrim(mode(char(krill.Transect(idx))));
+    end
+end
+
+% Clear temporary variables
+clear i idx
+
+%% format for .csv file
+
+%%%% save merged data using summary IFCB file of size class distributions that ignore small ROIs with an ESD < threshold
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizeclass.mat','P');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizeclass.mat','PB');
+
+clearvars E T idx X
+
+%% export .csv file for SDM
+writetimetable(PB,[filepath 'Shimada\Data\PB_NASC_sizeclass.csv'])

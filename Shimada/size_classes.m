@@ -9,7 +9,7 @@ summarydir = 'C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shim
 addpath(genpath(filepath)); % add new data to search path
 threshold = 10;
 
-load([filepath 'class_eqdiam_biovol_class_byROI.mat'], 'BiEq', 'class2useTB'); %load IFCB data from summarize_class_cells_biovol_size_byROI.m
+load([filepath 'class_eqdiam_biovol_class_byROI.mat'], 'BiEq'); %load IFCB data from summarize_class_cells_biovol_size_byROI.m
 
 %% Generate size bins
 Y = log2(1):1/3:log2(50e6); 
