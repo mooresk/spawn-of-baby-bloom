@@ -47,9 +47,9 @@ for i = 1:length(yrrange)
 end
 
 % preallocate
-load([summarydir 'debug'], 'mdateTB', 'ml_analyzedTB'); %saved variables below to save time while debugging
-% mdateTB = IFCB_file2date(filelistTB);
-% ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
+% load([summarydir 'debug'], 'mdateTB', 'ml_analyzedTB'); %saved variables below to save time while debugging
+mdateTB = IFCB_file2date(filelistTB);
+ml_analyzedTB = IFCB_volume_analyzed(hdrname); 
 
 load(classfiles{1},'class2useTB');
 runtypeTB = filelistTB; %contents will be overwritten
