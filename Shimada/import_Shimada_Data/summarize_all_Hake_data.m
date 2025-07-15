@@ -228,5 +228,4 @@ clearvars E T idx X
 writetimetable(PB,[filepath 'Shimada\Data\PB_NASC_v5.csv'])
 
 % v5 corrects for ESD (instead of ECD which is what equivdiam is in the
-% feature file) in new BiEq file - ESD calculated from biovolume using
-% biovol2esd
+% feature file) in new BiEq file - ESD calculated from biovolume using biovol2esd
