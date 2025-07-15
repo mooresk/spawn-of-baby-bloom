@@ -24,7 +24,7 @@ T=timetable(DT,LAT,LON,TEMP,SAL,FL);
 
 %%%% load summary file of size classes that ignores small ROIs with an ESD < theshold  
 load([filepath 'Shimada\Data\summary_biovol_sizeclass.mat'],...
-   'sizeclass2use', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate');
+   'sizeclass2use', 'sizeclass2useB', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate');
 
 %% Format 2019-2023 IFCB data
 
@@ -35,6 +35,7 @@ bvmL = sizeclassbiovol./ml_analyzed;
 % get string with variable names for size classes
 for i=1:length(sizeclass2use)-1
     varNames{i} = num2str(sizeclass2use(i));
+    varNamesB{i} = num2str(sizeclass2useB(i));
 end
 
 %%%% round IFCB data to nearest minute and match with environmental data
@@ -42,8 +43,8 @@ dt = dateshift(dt,'start','minute');
 TT = array2timetable(cellsmL,'RowTimes',dt,'VariableNames',varNames);
 TT = addvars(TT,filelist,'Before',varNames(1));
 
-TB = array2timetable(bvmL,'RowTimes',dt,'VariableNames',varNames);
-TB = addvars(TB,filelist,'Before',varNames(1));
+TB = array2timetable(bvmL,'RowTimes',dt,'VariableNames',varNamesB);
+TB = addvars(TB,filelist,'Before',varNamesB(1));
 
 clearvars dt cellsmL bvml ml_analyzedTB mdateTB 
 

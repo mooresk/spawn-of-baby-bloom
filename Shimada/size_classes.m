@@ -53,6 +53,7 @@ imin = ff(end)+1; %this is the index for the lower end in YY
 clear f ff
 
 sizeclass2use = YY(imin:imax);
+sizeclass2useB = (pi*sizeclass2use^3)/6; %rearranged equation in biovol2esd.m to solve for biovol
 
 %% sum up size classes for ROIs
 %pre-allocate
@@ -77,6 +78,6 @@ end
 clear i j
 
 %% save new summary file
-save([summarydir 'summary_biovol_sizeclass'],'sizeclass2use', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate')
+save([summarydir 'summary_biovol_sizeclass'],'sizeclass2use', 'sizeclass2useB', 'sizeclasscount','sizeclassbiovol','ml_analyzed','filelist','mdate')
 disp('Summary file stored here:')
 disp([summarydir 'summary_biovol_sizeclass'])
