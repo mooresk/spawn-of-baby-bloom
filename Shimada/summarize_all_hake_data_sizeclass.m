@@ -51,29 +51,29 @@ TB = addvars(TB,filelist,'Before',varNamesB(1));
 clearvars dt cellsmL bvml ml_analyzed mdate
 
 %% Merge environmental data with IFCB data and calculate distance between each IFCB sample and the coast
-P_sc=synchronize(TT,T,'first');
-PB_sc=synchronize(TB,T,'first');
+P=synchronize(TT,T,'first');
+PB=synchronize(TB,T,'first');
 
 % calculate distance to coast
 load([filepath 'Shimada\Data\coast_CCS.mat'],'coast');
 coast=coast((coast(:,2)>=32 & coast(:,2)<=50),:); %shorten this to latitide where we have IFCB data
 C.lat=coast(:,2); C.lon=coast(:,1);
-coast_km=NaN*P_sc.LAT; %preallocate
+coast_km=NaN*P.LAT; %preallocate
 for i=1:(length(coast_km))
-    [dist,~]=(distance(P_sc.LAT(i),P_sc.LON(i),C.lat,C.lon)); % get all the possible combinations
+    [dist,~]=(distance(P.LAT(i),P.LON(i),C.lat,C.lon)); % get all the possible combinations
     coast_km(i) = deg2km(min(dist)); %find the minimum distance
 end
 
-P_sc=addvars(P_sc,coast_km);
-PB_sc=addvars(PB_sc,coast_km);
+P=addvars(P,coast_km);
+PB=addvars(PB,coast_km);
 
-PB_sc=movevars(PB_sc,{'LAT' 'LON' 'coast_km' 'TEMP' 'SAL' 'FL'},'Before','filelist');
-PB_sc(isnan(PB_sc.LAT),:)=[];
+PB=movevars(PB,{'LAT' 'LON' 'coast_km' 'TEMP' 'SAL' 'FL'},'Before','filelist');
+PB(isnan(PB.LAT),:)=[];
 
 % remove non biovolume
-P_sc=removevars(P_sc,{'TEMP' 'SAL' 'FL'});
-P_sc=movevars(P_sc,{'LAT' 'LON' 'coast_km'},'Before','filelist');
-P_sc(isnan(P_sc.LAT),:)=[];
+P=removevars(P,{'TEMP' 'SAL' 'FL'});
+P=movevars(P,{'LAT' 'LON' 'coast_km'},'Before','filelist');
+P(isnan(P.LAT),:)=[];
 
 %% Set up the Import Options and import the krill data
 opts = delimitedTextImportOptions("NumVariables", 27);
@@ -142,14 +142,14 @@ clear opts Date_S_t Date_M_t Date_E_t Time_S_t Time_M_t Time_E_t i
 %% Match IFCB and krill data
 % for each IFCB sample, find the NASC measurements for 0.5 nmi bins that start no more than 10 min before the IFCB sample and end no more than 10 min after
 %%%% preallocate
-PB_sc.avNASC=NaN(height(PB_sc),1);
-PB_sc.transect=strings(height(PB_sc),1);
+PB.avNASC=NaN(height(PB),1);
+PB.transect=strings(height(PB),1);
 
-for i = 1:height(PB_sc)
-    idx = find(krill.myDatetime_S >= PB_sc.DT(i) - minutes(10) & krill.myDatetime_E <= PB_sc.DT(i) + minutes(10));
+for i = 1:height(PB)
+    idx = find(krill.myDatetime_S >= PB.DT(i) - minutes(10) & krill.myDatetime_E <= PB.DT(i) + minutes(10));
     if idx
-        PB_sc.avNASC(i) = mean(krill.NASC(idx));
-        PB_sc.transect(i) = strtrim(mode(char(krill.Transect(idx))));
+        PB.avNASC(i) = mean(krill.NASC(idx));
+        PB.transect(i) = strtrim(mode(char(krill.Transect(idx))));
     end
 end
 
@@ -159,10 +159,10 @@ clear i idx
 %% format for .csv file
 
 %%%% save merged data using summary IFCB file of size class distributions that ignore small ROIs with an ESD < threshold
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizeclass.mat','P_sc');
-save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizeclass.mat','PB_sc');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_cells_sizeclass.mat','P');
+save('C:\Users\Stephanie.Moore\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\summary_19-23Hake_biovolume_sizeclass.mat','PB');
 
 clearvars E T idx X
 
 %% export .csv file for SDM
-writetimetable(PB_sc,[filepath 'Shimada\Data\PB_NASC_sizeclass.csv'])
+writetimetable(PB,[filepath 'Shimada\Data\PB_NASC_sizeclass.csv'])
