@@ -5,7 +5,7 @@ function [ ] = summarize_features_biovol_size_byROI(roibasepath,feapath_base,sum
 % Stephanie K. Moore modified A.D. Fischer to correct for ESD, July 2025
 %
 % %Example inputs
-yr='2023'; %year of interest
+yr='2023'; %year of interest, i.e., 2019 2021, 2023
 roibasepath = 'D:\Shimada\data\'; %location of raw data
 feapath_base = ['D:\Shimada\features\' yr '\']; %put in your featurepath by year
 summarydir = 'C:\Users\ifcbuser\Documents\GitHub\spawn-of-baby-bloom\Shimada\Data\'; %where you want the summary file to go
